@@ -1,15 +1,22 @@
 pipeline {
-  agent any
-  stages {
-    stage('First stage'){
-      steps {
-        echo "I'm runing"  
-      }
+    agent {
+        label "ansible_docker"
     }
-    stage('Second stage'){
-      steps {
-        echo "And I'm too"
-      }
+
+    stage("Git checkout"){
+        git  'git@github.com:Alexdev87/example-playbook-1.git'
     }
-  }
+    stage("Check ssh key"){
+        secret_check=true
+    }
+    stage("Run playbook"){
+        if (secret_check){
+            sh 'ansible-galaxy install -r requirements.yml'
+            sh 'ansible-playbook -i inventory/prod.yml site.yml'
+        }
+        else{
+            echo 'no more keys'
+        }
+        
+    }
 }
